@@ -1,0 +1,12 @@
+{
+  "name": "goldapple-fmx-smi2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx hyperframes present ./composition",
+    "check": "npx --yes hyperframes@0.7.60 check",
+    "render": "npx --yes hyperframes@0.7.60 render",
+    "publish": "npx --yes hyperframes@0.7.60 publish",
+    "studio": "npx hyperframes preview ./composition"
+  }
+}

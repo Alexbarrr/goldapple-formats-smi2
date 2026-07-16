@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>формats.media × СМИ2 — Золотое яблоко</title>
+    <script>
+      // Retitle the audience tab so the two tabs are distinguishable in the
+      // browser tab strip and in Meet's "Share a tab" picker.
+      if (new URLSearchParams(location.search).get("mode") === "audience") {
+        document.title = "Золотое яблоко · дек" + " — Audience";
+      }
+    </script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; background: #0a0a0a; overflow: hidden; }
+      hyperframes-slideshow { display: block; position: relative; width: 100vw; height: 100vh; }
+      hyperframes-player { position: absolute; inset: 0; }
+    </style>
+    <script src="./assets/player.js"></script>
+    <script src="./assets/slideshow.js"></script>
+  </head>
+  <body>
+    <hyperframes-slideshow tabindex="0" sound>
+      <hyperframes-player interactive src="./composition/index.html"></hyperframes-player>
+      <script type="application/hyperframes-slideshow+json">
+{
+        "slides": [
+          { "sceneId": "cover",
+            "notes": "Пауза. Дать узнать эстетику: «это же ваш сайт». Не называть цену — она в конце. Одна фраза: мы собрали волну под Золотое яблоко." },
+          { "sceneId": "thesis",
+            "notes": "Тема согласована в брифе: потребительский экстремизм. Продукт — Информационная волна: устойчивый новостной фон + вынос темы в широкую дискуссию." },
+          { "sceneId": "wave",
+            "notes": "Три щелчка — три условия. 1) tier-1 + тематические/региональные. 2) выдача в ответах ИИ-ассистентов, в т.ч. в регионах присутствия. 3) поддерживающий трафик — 400 тысяч прочтений.",
+            "fragments": [16.35, 16.7, 17.05] },
+          { "sceneId": "kpi",
+            "notes": "Каждая цифра — щелчок. Подчеркнуть: это параметры пакета, а не прогноз. 2 ТОП-СМИ / 10–12 тематических и региональных / 200 000+ переходов / 4 млн+ показов.",
+            "fragments": [28.35, 28.7, 29.05, 29.4] },
+          { "sceneId": "index",
+            "notes": "Не читать список вслух. Одна фраза: 17 федеральных изданий tier-1, 52 тематических и региональных, плюс собственные ресурсы СМИ2." },
+          { "sceneId": "price",
+            "notes": "Сигнатурный слайд. Дать рассмотреть. Состав — щелчок, цена — щелчок. 700 000 по тарифу, спеццена 400 000 до НДС. Кнопка «параметры размещения» открывает полную таблицу.",
+            "fragments": [48.45, 48.9],
+            "hotspots": [
+              { "id": "h-params", "label": "параметры размещения", "target": "seq-params",
+                "region": { "x": 75, "y": 75, "w": 20, "h": 9 } }
+            ] },
+          { "sceneId": "close",
+            "notes": "Финал: кто собрал — formats.media × СМИ2. Все цены до НДС. Следующий шаг — согласовать тему и сроки волны." }
+        ],
+        "slideSequences": [
+          { "id": "seq-params", "label": "Параметры размещения",
+            "slides": [ { "sceneId": "params",
+              "notes": "Полная таблица из КП. Обратить внимание: прочтения 100 000 + поддерживающий трафик 300 тысяч = те самые 400 тысяч прочтений." } ] }
+        ]
+      }
+      </script>
+    </hyperframes-slideshow>
+    <!-- Present CTA lives in the component's nav cluster (data-hf-present, plus
+         the P key) — no page-level button, or we'd render two Present CTAs. -->
+    <script>
+      // Sound effects play HERE, in the parent document. The composition runs in the
+      // player's iframe, which is autoplay-blocked without its own user gesture; the
+      // slideshow posts { type: "hf-sfx", name } to the parent on nav, and we play the
+      // matching clip from the deck's sfx/ folder (served under /composition/sfx/).
+      // Runs in both presenter and audience windows. Missing clips fail silently.
+      (function () {
+        var clips = {
+          advance: new Audio("/composition/sfx/advance.mp3"),
+          fragment: new Audio("/composition/sfx/fragment.mp3"),
+          "branch-enter": new Audio("/composition/sfx/branch-enter.mp3"),
+          back: new Audio("/composition/sfx/back.mp3"),
+        };
+        clips.advance.volume = 0.45;
+        clips.fragment.volume = 0.4;
+        clips["branch-enter"].volume = 0.4;
+        clips.back.volume = 0.4;
+        for (var k in clips) clips[k].preload = "auto";
+
+        // Mute state is owned by <hyperframes-slideshow sound>; mirror it.
+        var muted = false;
+        function setClipsMuted(nextMuted) {
+          Object.keys(clips).forEach(function (name) {
+            clips[name].muted = nextMuted;
+          });
+        }
+        var ss = document.querySelector("hyperframes-slideshow");
+        if (ss) {
+          ss.addEventListener("hf-sound", function (e) {
+            muted = e.detail && e.detail.muted === true;
+            setClipsMuted(muted);
+          });
+        }
+
+        // Autoplay needs a user gesture — prime each clip (play muted, reset) on the
+        // first interaction so later plays are instant and allowed.
+        var unlocked = false;
+        function unlock() {
+          if (unlocked) return;
+          unlocked = true;
+          Object.keys(clips).forEach(function (name) {
+            var el = clips[name];
+            var v = el.volume;
+            el.volume = 0;
+            el.play()
+              .then(function () {
+                el.pause();
+                el.currentTime = 0;
+                el.volume = v;
+              })
+              .catch(function () {
+                el.volume = v;
+              });
+          });
+        }
+        window.addEventListener("keydown", unlock, true);
+        window.addEventListener("pointerdown", unlock, true);
+        window.addEventListener("click", unlock, true);
+
+        window.addEventListener("message", function (e) {
+          // Only accept cues from this origin (the composition iframe is same-origin).
+          if (e.origin !== location.origin) return;
+          var d = e.data;
+          if (!d || d.type !== "hf-sfx" || muted) return;
+          // Own-property guard: a malicious name like "__proto__" must not resolve to
+          // a prototype object (which would be truthy and then get mutated below).
+          if (!Object.prototype.hasOwnProperty.call(clips, d.name)) return;
+          var el = clips[d.name];
+          if (!el || !unlocked) return;
+          try {
+            el.currentTime = 0;
+            el.play().catch(function () {});
+          } catch (err) {
+            /* ignore */
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

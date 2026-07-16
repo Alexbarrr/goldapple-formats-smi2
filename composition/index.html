@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>formats.media × СМИ2 — Золотое яблоко · информационная волна</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* ── fonts (local woff2, cyrillic+latin) ─────────────────────── */
+      @font-face { font-family: 'Prata'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/Prata-400-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'Prata'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/Prata-400-latin.woff2) format('woff2'); }
+      @font-face { font-family: 'Spectral'; font-style: normal; font-weight: 300; font-display: swap; src: url(media/fonts/Spectral-300-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'Spectral'; font-style: normal; font-weight: 300; font-display: swap; src: url(media/fonts/Spectral-300-latin.woff2) format('woff2'); }
+      @font-face { font-family: 'Spectral'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/Spectral-400-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'Spectral'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/Spectral-400-latin.woff2) format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/JetBrainsMono-400-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(media/fonts/JetBrainsMono-400-latin.woff2) format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url(media/fonts/JetBrainsMono-700-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url(media/fonts/JetBrainsMono-700-latin.woff2) format('woff2'); }
+      @font-face { font-family: 'Montserrat'; font-style: italic; font-weight: 800; font-display: swap; src: url(media/fonts/Montserrat-800i-cyrillic.woff2) format('woff2'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: 'Montserrat'; font-style: italic; font-weight: 800; font-display: swap; src: url(media/fonts/Montserrat-800i-latin.woff2) format('woff2'); }
+
+      /* ── design tokens (DESIGN.md) ───────────────────────────────── */
+      :root{
+        --ink:#0B0B0C; --ink-raise:#141416; --bone:#F2EEE6; --bone-dim:#A9A49A;
+        --hairline:#2A2A2E; --lime:#C6F53C; --green:#40AE49; --navy-ghost:#2B3E52;
+      }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { margin:0; width:1920px; height:1080px; overflow:hidden; background:var(--ink); }
+      body { font-family:'Spectral', serif; color:var(--bone); }
+
+      .scene { position:absolute; top:0; left:0; width:1920px; height:1080px; overflow:hidden;
+               opacity:0; visibility:hidden; pointer-events:none; }
+      /* fragment items start hidden; controller reveals on crossing */
+      .frag { opacity:0; }
+      .fill  { position:absolute; inset:0; background:var(--ink); }
+
+      /* typography roles */
+      .display { font-family:'Prata', serif; font-weight:400; letter-spacing:-.01em; }
+      .mono    { font-family:'JetBrains Mono', monospace; font-variant-numeric:tabular-nums; }
+      .fm      { font-family:'Montserrat', sans-serif; font-style:italic; font-weight:800; }
+
+      /* recurring chrome */
+      .credits { position:absolute; left:120px; bottom:64px; font-family:'JetBrains Mono',monospace;
+                 font-size:22px; letter-spacing:.14em; color:var(--bone-dim); text-transform:lowercase; }
+      .pageno  { position:absolute; right:120px; bottom:64px; font-family:'JetBrains Mono',monospace;
+                 font-size:22px; letter-spacing:.14em; color:var(--bone-dim); }
+      .kicker  { font-family:'JetBrains Mono',monospace; font-size:24px; letter-spacing:.32em;
+                 text-transform:uppercase; color:var(--bone-dim); }
+      .hairline-row { border-bottom:1px solid var(--hairline); }
+
+      /* GA lime tag logo */
+      .ga-tag { display:inline-flex; align-items:center; justify-content:center;
+                background:var(--lime); border-radius:22%; }
+      .ga-tag svg { display:block; }
+      .ga-tag svg path { fill:#0B0B0C; }
+
+      /* СМИ2 logo sizing */
+      .smi2-logo { display:block; }
+
+      /* green trust dots (<24px rule) */
+      .dot { width:14px; height:14px; border-radius:50%; background:var(--green); display:inline-block; }
+      .dot.off { background:var(--hairline); }
+    </style>
+  </head>
+  <body>
+    <script type="application/hyperframes-slideshow+json">
+      {
+        "slides": [
+          { "sceneId": "cover",
+            "notes": "Пауза. Дать узнать эстетику: «это же ваш сайт». Не называть цену — она в конце. Одна фраза: мы собрали волну под Золотое яблоко." },
+          { "sceneId": "thesis",
+            "notes": "Тема согласована в брифе: потребительский экстремизм. Продукт — Информационная волна: устойчивый новостной фон + вынос темы в широкую дискуссию." },
+          { "sceneId": "wave",
+            "notes": "Три щелчка — три условия. 1) tier-1 + тематические/региональные. 2) выдача в ответах ИИ-ассистентов, в т.ч. в регионах присутствия. 3) поддерживающий трафик — 400 тысяч прочтений.",
+            "fragments": [16.35, 16.7, 17.05] },
+          { "sceneId": "kpi",
+            "notes": "Каждая цифра — щелчок. Подчеркнуть: это параметры пакета, а не прогноз. 2 ТОП-СМИ / 10–12 тематических и региональных / 200 000+ переходов / 4 млн+ показов.",
+            "fragments": [28.35, 28.7, 29.05, 29.4] },
+          { "sceneId": "index",
+            "notes": "Не читать список вслух. Одна фраза: 17 федеральных изданий tier-1, 52 тематических и региональных, плюс собственные ресурсы СМИ2." },
+          { "sceneId": "price",
+            "notes": "Сигнатурный слайд. Дать рассмотреть. Состав — щелчок, цена — щелчок. 700 000 по тарифу, спеццена 400 000 до НДС. Кнопка «параметры размещения» открывает полную таблицу.",
+            "fragments": [48.45, 48.9],
+            "hotspots": [
+              { "id": "h-params", "label": "параметры размещения", "target": "seq-params",
+                "region": { "x": 75, "y": 75, "w": 20, "h": 9 } }
+            ] },
+          { "sceneId": "close",
+            "notes": "Финал: кто собрал — formats.media × СМИ2. Все цены до НДС. Следующий шаг — согласовать тему и сроки волны." }
+        ],
+        "slideSequences": [
+          { "id": "seq-params", "label": "Параметры размещения",
+            "slides": [ { "sceneId": "params",
+              "notes": "Полная таблица из КП. Обратить внимание: прочтения 100 000 + поддерживающий трафик 300 тысяч = те самые 400 тысяч прочтений." } ] }
+        ]
+      }
+    </script>
+
+
+    <!-- root composition anchor: gives the harness root timeline a real composition target -->
+    <div id="root-scene" data-composition-id="root" data-start="0" data-duration="72"
+         data-label="root" data-width="1920" data-height="1080"
+         style="position:absolute; left:0; top:0; width:1920px; height:1080px; pointer-events:none;">
+      <div id="root-dwell" class="clip" data-start="0" data-duration="72" data-track-index="0"
+           style="position:absolute; width:1px; height:1px; left:-5px; top:-5px; opacity:0.01;"></div>
+    </div>
+
+    <!-- ══ Slide 1 · cover · 0–8 ══════════════════════════════════════ -->
+    <div class="scene" id="cover-scene" data-composition-id="cover" data-start="0" data-duration="8"
+         data-label="Обложка" data-width="1920" data-height="1080">
+      <section id="cover-sec" class="clip" data-start="0" data-duration="8" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+        <div style="position:absolute; inset:0;
+                    background:radial-gradient(1200px 700px at 78% 20%, rgba(43,62,82,.28), transparent 65%);"></div>
+
+        <!-- GA brand row -->
+        <div id="cover-brand" data-anim style="position:absolute; left:120px; top:96px; display:flex; align-items:center; gap:28px;">
+          <span class="ga-tag" style="width:96px; height:96px;">
+            <svg width="60" height="60" viewBox="0 0 26 26" stroke="none"><path fill-rule="evenodd" d="M13.73 9.31a4.8 4.8 0 0 1-.73 2.56 4.8 4.8 0 0 1-.73-2.56V9.1c0-.94.27-1.82.73-2.56.46.74.73 1.62.73 2.56v.21zm0 8.06c0 .94-.27 1.82-.73 2.56a4.81 4.81 0 0 1-.73-2.56v-.21c0-.94.27-1.82.73-2.56a4.8 4.8 0 0 1 .73 2.56v.21zM23 4.36V2.82h-6.14A6.05 6.05 0 0 0 13 4.24a6.06 6.06 0 0 0-3.87-1.42H3v1.54h6.13a4.5 4.5 0 0 1 2.82 1 6.38 6.38 0 0 0-1.23 3.78v.3c0 .6.08 1.18.23 1.73a5.96 5.96 0 0 0-1.84-.3H3v1.55h6.13c.95 0 1.85.3 2.6.83a6.05 6.05 0 0 0-2.6.84H3v1.54h6.13c.66 0 1.29-.1 1.84-.3a6.4 6.4 0 0 0-.23 1.74v.3c0 1.4.45 2.71 1.23 3.77a4.5 4.5 0 0 1-2.82 1H3v1.55h6.13c1.47 0 2.83-.53 3.87-1.42a6.06 6.06 0 0 0 3.86 1.42H23v-1.55h-6.14a4.5 4.5 0 0 1-2.81-1 6.38 6.38 0 0 0 1.22-3.77v-.3c0-.61-.08-1.19-.23-1.74.56.2 1.18.3 1.84.3H23v-1.54h-6.12a4.5 4.5 0 0 1-2.61-.84 4.5 4.5 0 0 1 2.6-.83H23V9.42h-6.12c-.66 0-1.28.1-1.84.3a6.4 6.4 0 0 0 .23-1.73v-.3a6.38 6.38 0 0 0-1.22-3.78 4.5 4.5 0 0 1 2.81-1H23z"/></svg>
+          </span>
+          <span class="display" style="font-size:56px; text-transform:lowercase; color:var(--bone);">золотое яблоко</span>
+        </div>
+
+        <!-- headline -->
+        <div style="position:absolute; left:120px; top:380px; width:1560px;">
+          <p id="cover-kick" data-anim class="kicker">коммерческое предложение</p>
+          <h1 id="cover-title" data-anim class="display" style="font-size:136px; line-height:1.02; text-transform:lowercase; margin-top:36px; color:var(--bone);">
+            информационная <span class="fm" style="color:var(--lime); font-size:120px;">волна</span>
+          </h1>
+        </div>
+
+        <!-- lime oscillogram -->
+        <svg id="cover-wave" width="1680" height="120" viewBox="0 0 1680 120" fill="none"
+             style="position:absolute; left:120px; top:800px;">
+          <path id="cover-wave-path" d="M0 60 C 120 60, 160 18, 260 18 S 400 102, 520 102 S 660 34, 780 34 S 920 86, 1040 86 S 1180 44, 1300 44 S 1440 72, 1560 72 S 1650 60, 1680 60"
+                stroke="#C6F53C" stroke-width="3" fill="none"/>
+        </svg>
+
+        <p class="credits">formats.media × сми2 · июль 2026</p>
+        <p class="pageno mono">01 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 2 · thesis · 8–16 ════════════════════════════════════ -->
+    <div class="scene" id="thesis-scene" data-composition-id="thesis" data-start="8" data-duration="8"
+         data-label="Что продаём" data-width="1920" data-height="1080">
+      <section id="thesis-sec" class="clip" data-start="8" data-duration="8" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+
+        <!-- store photo right, dark veil -->
+        <div style="position:absolute; right:0; top:0; width:760px; height:1080px; overflow:hidden;">
+          <img id="thesis-photo" src="media/store_dark.webp" alt="Золотое яблоко — интерьер магазина"
+               style="width:100%; height:100%; object-fit:cover; filter:saturate(.82) brightness(.72);" />
+          <div style="position:absolute; inset:0; background:linear-gradient(90deg, #0B0B0C 0%, rgba(11,11,12,.35) 45%, rgba(11,11,12,.15) 100%);"></div>
+        </div>
+
+        <div id="thesis-copy" data-anim style="position:absolute; left:120px; top:170px; width:940px;">
+          <p class="kicker">тема волны</p>
+          <h2 class="display" style="font-size:72px; line-height:1.08; margin-top:32px; text-transform:lowercase; color:var(--bone);">
+            потребительский экстремизм обсуждают без&nbsp;вас — возглавьте дискуссию
+          </h2>
+          <p style="font-family:'Spectral',serif; font-weight:300; font-size:34px; line-height:1.5; color:var(--bone-dim); margin-top:40px;">
+            Размещаем экспертный материал о потребительском экстремизме на площадках СМИ2.
+            «Информационная волна» создаёт устойчивый новостной фон вокруг темы
+            и выносит её в общественную дискуссию — на широкую аудиторию.
+          </p>
+        </div>
+
+        <p class="credits">formats.media × сми2</p>
+        <p class="pageno mono">02 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 3 · wave mechanics · 16–28 · fragments ═══════════════ -->
+    <div class="scene" id="wave-scene" data-composition-id="wave" data-start="16" data-duration="12"
+         data-label="Как работает" data-width="1920" data-height="1080">
+      <section id="wave-sec" class="clip" data-start="16" data-duration="12" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+
+        <div style="position:absolute; left:120px; top:150px; width:1680px;">
+          <p class="kicker">условия предложения</p>
+          <h2 class="display" style="font-size:76px; line-height:1.1; margin-top:32px; text-transform:lowercase; color:var(--bone);">
+            одна волна — федеральная пресса, регионы и&nbsp;ответы ИИ‑ассистентов
+          </h2>
+        </div>
+
+        <div style="position:absolute; left:120px; top:460px; width:1680px;">
+          <div id="wave-c1" class="hairline-row frag" style="display:flex; gap:48px; padding:30px 0; align-items:baseline;">
+            <span class="mono" style="font-size:30px; color:var(--lime); flex:0 0 90px;">01</span>
+            <p style="font-size:38px; font-weight:400; line-height:1.4; color:var(--bone);">
+              Размещение на федеральных <em style="font-style:normal; border-bottom:2px solid var(--green);">tier‑1</em> новостных сайтах, тематических и региональных.
+            </p>
+          </div>
+          <div id="wave-c2" class="hairline-row frag" style="display:flex; gap:48px; padding:30px 0; align-items:baseline;">
+            <span class="mono" style="font-size:30px; color:var(--lime); flex:0 0 90px;">02</span>
+            <p style="font-size:38px; font-weight:400; line-height:1.4; color:var(--bone);">
+              Охват не только аудитории СМИ — материалы попадают в выдачу ответов ИИ‑ассистентов, в том числе в регионах присутствия.
+            </p>
+          </div>
+          <div id="wave-c3" class="frag" style="display:flex; gap:48px; padding:30px 0; align-items:baseline;">
+            <span class="mono" style="font-size:30px; color:var(--lime); flex:0 0 90px;">03</span>
+            <p style="font-size:38px; font-weight:400; line-height:1.4; color:var(--bone);">
+              Пул индексируемых СМИ из ТОП‑200 Рунета + поддерживающий трафик — 400&nbsp;тысяч прочтений материалов.
+            </p>
+          </div>
+        </div>
+
+        <p class="credits">formats.media × сми2</p>
+        <p class="pageno mono">03 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 4 · KPI · 28–40 · fragments ══════════════════════════ -->
+    <div class="scene" id="kpi-scene" data-composition-id="kpi" data-start="28" data-duration="12"
+         data-label="Метрики" data-width="1920" data-height="1080">
+      <section id="kpi-sec" class="clip" data-start="28" data-duration="12" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+        <div style="position:absolute; inset:0;
+                    background:radial-gradient(1100px 600px at 20% 100%, rgba(43,62,82,.22), transparent 60%);"></div>
+
+        <div style="position:absolute; left:120px; top:150px; width:1680px;">
+          <p class="kicker">что даёт волна</p>
+          <h2 class="display" style="font-size:76px; line-height:1.1; margin-top:32px; text-transform:lowercase; color:var(--bone);">
+            это параметры пакета — не&nbsp;прогноз
+          </h2>
+        </div>
+
+        <div style="position:absolute; left:120px; top:400px; width:1680px; display:grid; grid-template-columns:1fr 1fr; gap:0;">
+          <div id="kpi-1" class="frag" style="padding:40px 64px 40px 0; border-bottom:1px solid var(--hairline); border-right:1px solid var(--hairline);">
+            <p class="mono" style="font-size:92px; color:var(--bone);">2</p>
+            <p style="font-size:32px; font-weight:300; color:var(--bone-dim); margin-top:14px;">публикации в ТОП‑СМИ</p>
+          </div>
+          <div id="kpi-2" class="frag" style="padding:40px 0 40px 64px; border-bottom:1px solid var(--hairline);">
+            <p class="mono" style="font-size:92px; color:var(--bone);">10–12</p>
+            <p style="font-size:32px; font-weight:300; color:var(--bone-dim); margin-top:14px;">публикаций в тематических и региональных СМИ</p>
+          </div>
+          <div id="kpi-3" class="frag" style="padding:40px 64px 0 0; border-right:1px solid var(--hairline);">
+            <p class="mono" style="font-size:92px; color:var(--bone);">200 000+</p>
+            <p style="font-size:32px; font-weight:300; color:var(--bone-dim); margin-top:14px;">переходов на публикации в СМИ</p>
+          </div>
+          <div id="kpi-4" class="frag" style="padding:40px 0 0 64px;">
+            <p class="mono" style="font-size:92px; color:var(--lime);">4 000 000+</p>
+            <p style="font-size:32px; font-weight:300; color:var(--bone-dim); margin-top:14px;">целевых показов в обменной сети СМИ2</p>
+          </div>
+        </div>
+
+        <p class="credits">formats.media × сми2</p>
+        <p class="pageno mono">04 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 5 · editorial index · 40–48 ══════════════════════════ -->
+    <div class="scene" id="index-scene" data-composition-id="index" data-start="40" data-duration="8"
+         data-label="Список СМИ" data-width="1920" data-height="1080">
+      <section id="index-sec" class="clip" data-start="40" data-duration="8" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+
+        <div style="position:absolute; left:120px; top:130px; width:1680px;">
+          <p class="kicker">пул размещения</p>
+          <h2 class="display" style="font-size:68px; line-height:1.1; margin-top:28px; text-transform:lowercase; color:var(--bone);">
+            семнадцать федеральных изданий tier‑1 — и&nbsp;52 региональных за&nbsp;ними
+          </h2>
+        </div>
+
+        <div id="index-body" data-anim style="position:absolute; left:120px; top:380px; width:1680px; display:flex; gap:96px;">
+          <!-- tier-1 price-list -->
+          <div style="flex:0 0 780px;">
+            <p class="mono" style="font-size:24px; letter-spacing:.28em; text-transform:uppercase; color:var(--lime); padding-bottom:20px; border-bottom:1px solid var(--hairline);">топ‑сми · 2 публикации</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; column-gap:64px; margin-top:8px;">
+              <div>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">aif.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">gazeta.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">iz.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">kp.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">lenta.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">life.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">mk.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">news.rambler.ru</p>
+                <p class="mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">news.ru</p>
+              </div>
+              <div>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">nsn.fm</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">osnmedia.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">pnp.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">radio1.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">rg.ru</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">russian.rt.com</p>
+                <p class="hairline-row mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">ura.news</p>
+                <p class="mono" style="font-size:29px; line-height:1; padding:12px 0; color:var(--bone);">vm.ru</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- second pool -->
+          <div style="flex:1;">
+            <p class="mono" style="font-size:24px; letter-spacing:.28em; text-transform:uppercase; color:var(--bone-dim); padding-bottom:20px; border-bottom:1px solid var(--hairline);">тематические и региональные · 10–12 публикаций</p>
+            <p style="font-size:38px; font-weight:300; line-height:1.5; color:var(--bone); margin-top:28px;">
+              52 издания по всей стране — от&nbsp;Казани и&nbsp;Краснодара до&nbsp;Владивостока:
+              <span style="color:var(--bone-dim);">newizv.ru, regnum.ru, riamo.ru, vz.ru, rosbalt.ru, passion.ru, mel.fm, primamedia.ru и&nbsp;другие.</span>
+            </p>
+            <p class="mono" style="font-size:24px; letter-spacing:.28em; text-transform:uppercase; color:var(--bone-dim); padding:44px 0 20px; border-bottom:1px solid var(--hairline); margin-top:20px;">ресурсы сми2</p>
+            <div style="display:flex; gap:40px; margin-top:26px; align-items:center; flex-wrap:wrap;">
+              <span style="display:flex; align-items:center; gap:14px;"><span class="dot"></span><span class="mono" style="font-size:30px; color:var(--bone);">vk.com/smi2</span></span>
+              <span style="display:flex; align-items:center; gap:14px;"><span class="dot"></span><span class="mono" style="font-size:30px; color:var(--bone);">t.me/smi_2</span></span>
+              <span style="display:flex; align-items:center; gap:14px;"><span class="dot"></span><span class="mono" style="font-size:30px; color:var(--bone);">ok.ru/news.smi2</span></span>
+              <span style="display:flex; align-items:center; gap:14px;"><span class="dot"></span><span class="mono" style="font-size:30px; color:var(--bone);">max.ru/smi2</span></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="credits">formats.media × сми2</p>
+        <p class="pageno mono">05 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 6 · price = product card · 48–58 · fragments + hotspot ═ -->
+    <div class="scene" id="price-scene" data-composition-id="price" data-start="48" data-duration="10"
+         data-label="Цена" data-width="1920" data-height="1080">
+      <section id="price-sec" class="clip" data-start="48" data-duration="10" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+        <div style="position:absolute; inset:0;
+                    background:radial-gradient(1000px 640px at 18% 40%, rgba(43,62,82,.25), transparent 62%);"></div>
+
+        <!-- left: the "product" — lime tag like their signage -->
+        <div id="price-visual" data-anim style="position:absolute; left:120px; top:140px; width:640px; height:660px;
+                    background:var(--ink-raise); border:1px solid var(--hairline); border-radius:8px;
+                    display:flex; align-items:center; justify-content:center;">
+          <div style="text-align:center;">
+            <span class="ga-tag" style="width:280px; height:280px;">
+              <svg width="172" height="172" viewBox="0 0 26 26" stroke="none"><path fill-rule="evenodd" d="M13.73 9.31a4.8 4.8 0 0 1-.73 2.56 4.8 4.8 0 0 1-.73-2.56V9.1c0-.94.27-1.82.73-2.56.46.74.73 1.62.73 2.56v.21zm0 8.06c0 .94-.27 1.82-.73 2.56a4.81 4.81 0 0 1-.73-2.56v-.21c0-.94.27-1.82.73-2.56a4.8 4.8 0 0 1 .73 2.56v.21zM23 4.36V2.82h-6.14A6.05 6.05 0 0 0 13 4.24a6.06 6.06 0 0 0-3.87-1.42H3v1.54h6.13a4.5 4.5 0 0 1 2.82 1 6.38 6.38 0 0 0-1.23 3.78v.3c0 .6.08 1.18.23 1.73a5.96 5.96 0 0 0-1.84-.3H3v1.55h6.13c.95 0 1.85.3 2.6.83a6.05 6.05 0 0 0-2.6.84H3v1.54h6.13c.66 0 1.29-.1 1.84-.3a6.4 6.4 0 0 0-.23 1.74v.3c0 1.4.45 2.71 1.23 3.77a4.5 4.5 0 0 1-2.82 1H3v1.55h6.13c1.47 0 2.83-.53 3.87-1.42a6.06 6.06 0 0 0 3.86 1.42H23v-1.55h-6.14a4.5 4.5 0 0 1-2.81-1 6.38 6.38 0 0 0 1.22-3.77v-.3c0-.61-.08-1.19-.23-1.74.56.2 1.18.3 1.84.3H23v-1.54h-6.12a4.5 4.5 0 0 1-2.61-.84 4.5 4.5 0 0 1 2.6-.83H23V9.42h-6.12c-.66 0-1.28.1-1.84.3a6.4 6.4 0 0 0 .23-1.73v-.3a6.38 6.38 0 0 0-1.22-3.78 4.5 4.5 0 0 1 2.81-1H23z"/></svg>
+            </span>
+            <p class="mono" style="font-size:24px; letter-spacing:.3em; text-transform:uppercase; color:var(--bone-dim); margin-top:44px;">информационная волна</p>
+            <p class="mono" style="font-size:24px; letter-spacing:.3em; color:var(--bone-dim); margin-top:10px;">1 шт.</p>
+          </div>
+        </div>
+
+        <!-- right: purchase block, goldapple grammar -->
+        <div style="position:absolute; left:880px; top:140px; width:920px;">
+          <h2 class="display" style="font-size:66px; line-height:1.06; text-transform:lowercase; color:var(--bone);">
+            информационная волна
+          </h2>
+          <div style="display:flex; align-items:center; gap:18px; margin-top:26px;">
+            <span style="display:flex; gap:8px;">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </span>
+            <span class="mono" style="font-size:26px; color:var(--bone-dim);">tier‑1 медиа · федеральный охват</span>
+          </div>
+
+          <div id="price-composition" class="frag" style="margin-top:40px;">
+            <p class="mono" style="font-size:22px; letter-spacing:.3em; text-transform:uppercase; color:var(--bone-dim); padding-bottom:16px; border-bottom:1px solid var(--hairline);">состав</p>
+            <p class="hairline-row" style="font-size:34px; font-weight:300; padding:17px 0; color:var(--bone);">2 публикации в ТОП‑СМИ</p>
+            <p class="hairline-row" style="font-size:34px; font-weight:300; padding:17px 0; color:var(--bone);">10–12 публикаций в тематических и региональных</p>
+            <p class="hairline-row" style="font-size:34px; font-weight:300; padding:17px 0; color:var(--bone);">200 000+ переходов · 4 000 000+ показов в сети СМИ2</p>
+          </div>
+
+          <div id="price-money" class="frag" style="display:flex; align-items:baseline; gap:40px; margin-top:44px;">
+            <span class="mono" style="font-size:44px; color:var(--bone-dim); text-decoration:line-through; text-decoration-thickness:2px;">700 000 ₽</span>
+            <span class="mono" style="font-size:96px; font-weight:700; color:var(--lime); letter-spacing:-.02em;">400 000 ₽</span>
+            <span class="mono" style="font-size:28px; color:var(--bone-dim);">до НДС</span>
+          </div>
+
+          <div id="price-cta" class="frag" style="display:flex; gap:28px; margin-top:40px; align-items:center;">
+            <span style="display:inline-block; padding:20px 48px; border:2px solid var(--lime); white-space:nowrap; border-radius:2px;
+                         font-family:'JetBrains Mono',monospace; font-size:28px; letter-spacing:.18em;
+                         text-transform:lowercase; color:var(--lime);">добавить в кампанию</span>
+                      </div>
+        </div>
+
+        <p class="credits">специальная цена · вместо базовых 700 000 ₽ до ндс</p>
+        <p class="pageno mono">06 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Slide 7 · close · 58–64 ════════════════════════════════════ -->
+    <div class="scene" id="close-scene" data-composition-id="close" data-start="58" data-duration="6"
+         data-label="Финал" data-width="1920" data-height="1080">
+      <section id="close-sec" class="clip" data-start="58" data-duration="6" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+        <div style="position:absolute; inset:0;
+                    background:radial-gradient(1200px 700px at 50% 115%, rgba(43,62,82,.3), transparent 65%);"></div>
+
+        <div id="close-lockup" data-anim style="position:absolute; left:0; right:0; top:330px; text-align:center;">
+          <p class="fm" style="font-size:88px; color:var(--lime); letter-spacing:-.01em;">formats.media</p>
+          <div style="display:flex; align-items:center; justify-content:center; gap:44px; margin-top:44px;">
+            <span class="display" style="font-size:56px; color:var(--bone-dim);">×</span>
+            <svg class="smi2-logo" width="220" height="79" viewBox="0 0 176 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M176 31.5C176 48.9025 161.962 63 144.634 63C127.305 63 113.267 48.9025 113.267 31.5C113.267 14.0975 127.305 0 144.634 0C161.962 0 176 14.0975 176 31.5Z" fill="#40AE49"/>
+              <path d="M153.351 44.1815H153.197H140.825C140.825 44.1815 140.518 44.2318 140.313 43.8797C140.109 43.5276 140.365 43.2761 140.365 43.2761C140.365 43.2761 146.091 37.2398 148.954 34.2719C152.328 30.7005 155.089 27.5314 155.089 23.306C155.089 18.3763 151.51 14 144.455 14C139.904 14 136.786 16.8672 135.61 18.1751L135.508 18.2757C135.303 18.5775 135.15 18.9297 135.15 19.2818C135.15 19.7345 135.354 20.1369 135.61 20.4387L135.661 20.489C135.968 20.7405 136.326 20.8915 136.735 20.8915C137.195 20.8915 137.604 20.6902 137.91 20.3884C139.444 18.8793 141.643 17.2697 144.352 17.2697C149.414 17.2697 151.255 20.6399 151.255 23.4066C151.255 25.6702 149.619 28.5877 146.295 32.1592C142.41 36.284 138.575 40.4088 134.638 44.5337L134.536 44.6343C134.434 44.7852 134.332 44.9361 134.28 45.087C134.229 45.2882 134.178 45.4391 134.178 45.6403C134.178 45.8415 134.229 46.0427 134.28 46.1936C134.536 46.7973 135.047 47.25 135.763 47.25H135.865H153.146H153.3C154.118 47.1997 154.782 46.5458 154.833 45.7409V45.59C154.782 44.8355 154.169 44.1815 153.351 44.1815Z" fill="#ffffff"/>
+              <g clip-path="url(#clip-ga-smi2)">
+              <path d="M77.0978 39.7775C76.7891 39.6271 76.7891 39.276 76.7891 39.276V15.8556V15.655C76.7377 14.7523 75.9661 14.0502 75.0401 14H74.9372C73.9598 14 73.2397 14.7523 73.1882 15.7051V15.7553V45.4446C73.1882 46.3974 73.9599 47.1998 74.9887 47.1998C75.5031 47.1998 75.9661 46.9992 76.3261 46.6482L96.4397 21.6731C96.4397 21.6731 96.7484 21.3722 97.1084 21.4725C97.4685 21.6229 97.4685 22.0241 97.4685 22.0241V45.3944V45.595C97.52 46.4977 98.2916 47.1999 99.2175 47.25H99.3204C100.298 47.25 101.018 46.4977 101.069 45.5449V45.4947V15.7553C101.069 14.8024 100.298 14 99.269 14C98.7546 14 98.2401 14.2006 97.9315 14.5517C92.8902 20.8707 77.7665 39.5769 77.7665 39.5769C77.7665 39.5769 77.5607 39.928 77.0978 39.7775Z" fill="#F2EEE6"/>
+              <path d="M66.1714 45.247L66.125 44.9465C66.125 44.9465 61.7104 16.2534 61.571 15.352C61.3852 14.3505 60.9205 14.0501 60.3164 14.0501H60.2699C59.7123 14.0501 59.3405 14.2504 58.9688 15.302C58.7364 15.9529 50.9762 39.238 50.9762 39.238C50.9762 39.238 50.8832 39.5885 50.5115 39.5885C50.1397 39.5885 50.0468 39.1879 50.0468 39.1879C50.0468 39.1879 42.2865 15.9029 42.0542 15.2519C41.6825 14.1502 41.3107 14 40.7531 14H40.7066C40.1025 14 39.6378 14.3005 39.452 15.302C39.2661 16.2033 34.898 44.8965 34.898 44.8965L34.8516 45.247C34.8516 45.2971 34.8516 45.3972 34.8516 45.4473C34.8516 46.3987 35.5951 47.1999 36.478 47.25H36.5709C37.3609 47.25 38.0114 46.599 38.1508 45.7477H38.1044L38.1508 45.6977L40.8925 24.8163C40.8925 24.8163 40.939 24.2154 41.4036 24.2154C41.8683 24.2154 42.0542 24.8663 42.0542 24.8663L49.2104 46.0983L49.2568 46.1984C49.4427 46.7493 49.8609 47.0998 50.558 47.0998C51.3015 47.0998 51.6732 46.6992 51.8591 46.1984L51.9056 46.0983L59.0153 24.8663C59.0153 24.8663 59.2011 24.2154 59.6658 24.2154C60.084 24.2154 60.177 24.8163 60.177 24.8163L62.9186 45.6476L62.9651 45.6977H62.9186C63.058 46.5489 63.7086 47.1499 64.4986 47.1999H64.5915C65.4744 47.1999 66.2179 46.3987 66.2179 45.3972C66.1714 45.3471 66.1714 45.2971 66.1714 45.247Z" fill="#F2EEE6"/>
+              <path d="M27.3779 40.9215C27.6799 41.2228 27.8309 41.6749 27.8812 42.1269C27.8812 43.031 27.1766 43.5332 27.1766 43.5332C24.157 46.0446 20.4831 47.25 16.7086 47.25C7.4484 47.25 0 39.9169 0 30.6752C0 21.4335 7.4484 14 16.7086 14C20.9361 14 24.157 15.3561 27.0256 17.5661L27.2269 17.7168C27.6799 18.1186 27.8309 18.5204 27.8309 19.0227C27.8309 19.0227 27.8309 19.6254 27.3779 20.2281L27.3276 20.2783C26.8243 20.7304 26.1197 20.7806 26.1197 20.7806C25.7675 20.7806 25.4152 20.6801 25.1635 20.4792C25.1132 20.429 24.9622 20.3286 24.9622 20.3286C22.6472 18.5204 19.6276 17.3652 16.7086 17.3652C9.41116 17.3652 3.77453 23.4928 3.77453 30.6752C3.77453 37.8074 9.36083 43.935 16.7086 43.935C20.4328 43.935 22.6472 42.5287 25.0125 40.8712C26.0694 40.1178 26.925 40.5699 27.2269 40.821" fill="#F2EEE6"/>
+              </g>
+              <defs><clipPath id="clip-ga-smi2"><rect width="101.069" height="63" fill="#F2EEE6"/></clipPath></defs>
+            </svg>
+          </div>
+          <p style="font-size:40px; font-weight:300; color:var(--bone-dim); margin-top:72px;">
+            Собрано для «Золотого яблока» · июль 2026
+          </p>
+          <p class="mono" style="font-size:24px; letter-spacing:.18em; color:var(--bone-dim); margin-top:28px;">
+            все цены указаны до ндс · следующий шаг — согласовать тему и сроки волны
+          </p>
+        </div>
+
+        <p class="pageno mono">07 / 07</p>
+      </section>
+    </div>
+
+    <!-- ══ Branch · params table · 64–72 (only via hotspot) ═══════════ -->
+    <div class="scene" id="params-scene" data-composition-id="params" data-start="64" data-duration="8"
+         data-label="Параметры размещения" data-width="1920" data-height="1080">
+      <section id="params-sec" class="clip" data-start="64" data-duration="8" data-track-index="1"
+               style="position:absolute; inset:0;">
+        <div class="fill"></div>
+
+        <div style="position:absolute; left:120px; top:100px; width:1680px;">
+          <p class="kicker">приложение</p>
+          <h2 class="display" style="font-size:64px; line-height:1.1; margin-top:28px; text-transform:lowercase; color:var(--bone);">
+            параметры размещения
+          </h2>
+        </div>
+
+        <div id="params-table" data-anim style="position:absolute; left:120px; top:300px; width:1680px;">
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Публикации в ТОП‑СМИ</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">2 публикации</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Публикации в другом пуле</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">12–14 материалов</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Переходы на публикации</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">200 тысяч</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Показы в сети СМИ2</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">более 4 млн</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Прочтения на СМИ2 и в соцсетях</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">100 000</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone);">Поддерживающий трафик на сайтах медиа</span>
+            <span class="mono" style="font-size:31px; color:var(--bone);">300 тысяч</span>
+          </div>
+          <div class="hairline-row" style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:300; color:var(--bone-dim);">Стоимость волны по тарифу</span>
+            <span class="mono" style="font-size:31px; color:var(--bone-dim); text-decoration:line-through;">700 000 ₽</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:16px 0;">
+            <span style="font-size:31px; font-weight:400; color:var(--bone);">Уникальное предложение</span>
+            <span class="mono" style="font-size:31px; font-weight:700; color:var(--lime);">400 000 ₽ до НДС</span>
+          </div>
+        </div>
+
+        <p class="credits">formats.media × сми2 · приложение к кп</p>
+      </section>
+    </div>
+
+    <script>
+      /* ── standalone slideshow harness (see slideshow/references/standalone-harness.md) ── */
+      window.__timelines = window.__timelines || {};
+      (function () {
+        var TOTAL = 72;
+        var tl = gsap.timeline({ paused: true });
+        tl.to("#root-dwell", { x: 0.001, duration: TOTAL, ease: "none" });
+        window.__timelines["root"] = tl;
+
+        var SCENES = [
+          { id: "cover",  start: 0,  duration: 8 },
+          { id: "thesis", start: 8,  duration: 8 },
+          { id: "wave",   start: 16, duration: 12 },
+          { id: "kpi",    start: 28, duration: 12 },
+          { id: "index",  start: 40, duration: 8 },
+          { id: "price",  start: 48, duration: 10 },
+          { id: "close",  start: 58, duration: 6 },
+          { id: "params", start: 64, duration: 8 }
+        ];
+
+        var FRAGMENTS = [
+          { time: 16.35, id: "wave-c1", scene: "wave", revealed: false },
+          { time: 16.7,  id: "wave-c2", scene: "wave", revealed: false },
+          { time: 17.05, id: "wave-c3", scene: "wave", revealed: false },
+          { time: 28.35, id: "kpi-1", scene: "kpi", revealed: false },
+          { time: 28.7,  id: "kpi-2", scene: "kpi", revealed: false },
+          { time: 29.05, id: "kpi-3", scene: "kpi", revealed: false },
+          { time: 29.4,  id: "kpi-4", scene: "kpi", revealed: false },
+          { time: 48.45, id: "price-composition", scene: "price", revealed: false },
+          { time: 48.9,  id: "price-money", scene: "price", revealed: false },
+          { time: 48.9,  id: "price-cta", scene: "price", revealed: false }
+        ];
+
+        function fireEntrance(sceneEl, sceneId) {
+          var els = sceneEl.querySelectorAll("[data-anim]");
+          if (els.length) {
+            gsap.from(els, { opacity: 0, y: 26, duration: 0.45, stagger: 0.08, ease: "power2.out", overwrite: true });
+          }
+          if (sceneId === "cover") {
+            var path = document.getElementById("cover-wave-path");
+            if (path) {
+              var len = path.getTotalLength();
+              gsap.fromTo(path, { strokeDasharray: len, strokeDashoffset: len },
+                { strokeDashoffset: 0, duration: 1.6, ease: "power2.out", overwrite: true });
+            }
+          }
+        }
+
+        function revealFragment(id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", overwrite: true });
+        }
+
+        var lastActiveId = null;
+        function updateVisibility(t) {
+          for (var i = 0; i < SCENES.length; i++) {
+            var s = SCENES[i];
+            var el = document.getElementById(s.id + "-scene");
+            if (!el) continue;
+            var active = t >= s.start && t < s.start + s.duration;
+            el.style.opacity = active ? "1" : "0";
+            el.style.visibility = active ? "visible" : "hidden";
+            el.style.pointerEvents = active ? "auto" : "none";
+            if (active && lastActiveId !== s.id) {
+              lastActiveId = s.id;
+              for (var f = 0; f < FRAGMENTS.length; f++) {
+                if (FRAGMENTS[f].scene === s.id) {
+                  FRAGMENTS[f].revealed = false;
+                  var fe = document.getElementById(FRAGMENTS[f].id);
+                  if (fe) gsap.set(fe, { opacity: 0, clearProps: "transform" });
+                }
+              }
+              fireEntrance(el, s.id);
+            }
+          }
+          for (var f = 0; f < FRAGMENTS.length; f++) {
+            if (!FRAGMENTS[f].revealed && t >= FRAGMENTS[f].time) {
+              FRAGMENTS[f].revealed = true;
+              revealFragment(FRAGMENTS[f].id);
+            }
+          }
+        }
+
+        window.__hfSetTime = updateVisibility;
+        updateVisibility(0);
+        tl.eventCallback("onUpdate", function () { updateVisibility(tl.time()); });
+
+        /* scenes bootstrap for <hyperframes-slideshow> */
+        var FPS = 30;
+        function postTimeline() {
+          try {
+            parent.postMessage({
+              source: "hf-preview", type: "timeline",
+              durationInFrames: TOTAL * FPS,
+              scenes: SCENES.map(function (s) { return { id: s.id, start: s.start, duration: s.duration }; })
+            }, "*");
+          } catch (e) {}
+        }
+        if (document.readyState === "complete") { setTimeout(postTimeline, 300); }
+        else { window.addEventListener("load", function () { setTimeout(postTimeline, 300); }); }
+      })();
+    </script>
+  </body>
+</html>
